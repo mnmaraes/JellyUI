@@ -8,6 +8,31 @@
 
 #import "JUIContainerViewController.h"
 
+@interface JUICardModel : NSObject
+
+@property (nonatomic) UIImage *image;
+@property (nonatomic) NSString *text;
+
+-(instancetype)initWithImageName:(NSString *)imageName andText:(NSString *)text;
+
+@end
+
+@implementation JUICardModel
+
+-(instancetype)initWithImageName:(NSString *)imageName andText:(NSString *)text
+{
+    self = [self init];
+    
+    if (self) {
+        _image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        _text = text;
+    }
+    
+    return self;
+}
+
+@end
+
 @interface JUIContainerViewController () <UIScrollViewDelegate>
 #pragma mark - Views
 @property (nonatomic) UIScrollView *cardContainerView;
@@ -19,6 +44,7 @@
 
 #pragma mark - Card Attributes
 @property (nonatomic) NSUInteger count;
+@property (nonatomic) NSArray *cardModelArray;
 
 #pragma mark - Animation Attributes
 @property (nonatomic) CGFloat deltaX;
@@ -36,9 +62,19 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     
+    self.cardModelArray = @[
+                            [[JUICardModel alloc] initWithImageName:@"cancel" andText:@"This is an X"],
+                            [[JUICardModel alloc] initWithImageName:@"checkmark" andText:@"This is not an X."],
+                            [[JUICardModel alloc] initWithImageName:@"plus" andText:@"This sign is a big plus"],
+                            [[JUICardModel alloc] initWithImageName:@"search" andText:@"I'm looking at you"],
+                            [[JUICardModel alloc] initWithImageName:@"settings" andText:@"Yep, all out of ideas."]
+                            ];
+    
+    
     [self addCardContainerView];
     [self addCardView];
     [self addTopBarView];
+    
     
     self.hiddenView = [self newHiddenView];
 }
@@ -254,15 +290,28 @@ static CGFloat kCardViewSideLength = 280.;
     UIView *cardView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, kCardViewSideLength, kCardViewSideLength)];
     cardView.backgroundColor = [UIColor blueColor];
     
-    UILabel *cardLabel = [UILabel new];
-    cardLabel.bounds = CGRectMake(0.0, 0.0, kCardViewSideLength, 80.);
-    cardLabel.center = CGPointMake(kCardViewSideLength/2., kCardViewSideLength/2.);
-    cardLabel.text = [NSString stringWithFormat:@"%ld", (long)self.count++];
-    cardLabel.textAlignment = NSTextAlignmentCenter;
-    cardLabel.font = [UIFont systemFontOfSize:60.];
-    cardLabel.textColor = [UIColor whiteColor];
-    
-    [cardView addSubview:cardLabel];
+    if (self.count < [self.cardModelArray count]) {
+        JUICardModel *model = [self.cardModelArray objectAtIndex:self.count];
+        
+        self.count++;
+        
+        UIImageView *imageView = [UIImageView new];
+        imageView.bounds = CGRectMake(0.0, 0.0, 50., 50.);
+        imageView.center = CGPointMake(kCardViewSideLength/2, kCardViewSideLength/2.);
+        imageView.tintColor = [UIColor whiteColor];
+        imageView.image = model.image;
+        
+        UILabel *cardLabel = [UILabel new];
+        cardLabel.bounds = CGRectMake(0.0, 0.0, kCardViewSideLength, 30.);
+        cardLabel.center = CGPointMake(kCardViewSideLength/2., kCardViewSideLength - 38.);
+        cardLabel.text = model.text;
+        cardLabel.textAlignment = NSTextAlignmentCenter;
+        cardLabel.font = [UIFont systemFontOfSize:24.];
+        cardLabel.textColor = [UIColor whiteColor];
+        
+        [cardView addSubview:cardLabel];
+        [cardView addSubview:imageView];
+    }
     
     return cardView;
 }
